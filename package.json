@@ -8,7 +8,7 @@
   "dependencies": {
     "underscore": "1.4.x",
     "express": "3.x",
-    "smtp-protocol": "0.4.1",
+    "smtp-protocol": "git+http://github.com/drewtron/node-smtp-protocol.git",
     "seq": "0.3.5"
   },
   "devDependencies": {},

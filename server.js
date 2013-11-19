@@ -51,6 +51,44 @@ var nsLookup = function(domain, timeout, callback) {
   dns.resolveMx(domain, doCallback);
 };
 
+var smtp_check = function(req, res, hosts, email, bad_email){
+	var hostname = hosts.shift();
+	console.log('testing hostname', hostname);
+	
+	smtp.connect(hostname, 25, function (mail) {
+		seq()
+			.seq_(function (next) {
+				mail.on('greeting', function (code, lines) {
+					next();
+				});
+			})
+			.seq(function (next) {
+				mail.helo('MailTester', this.into('helo'));
+			})
+			.seq(function () {
+				mail.from('mailtester@gmail.com', this.into('from'));
+			})
+			.seq(function () {
+				mail.to(req.params.email, this.into('to'));
+			})
+			.seq(function () {
+				mail.to(bad_email, this.into('to_bad_email'));
+			})
+			.seq(function () {
+				mail.quit(this.into('quit'));
+			})
+			.seq(function () {
+				console.dir(this.vars);
+				res.json(this.vars);
+			});
+		return;//TODO call self
+	}, function(error){
+		error_message = error.code;
+		return;//TODO call self
+	});
+
+};
+
 app.get('/check_email/:email', function(req, res) {
 	//TODO BASIC VALIDATION
 	var split_email = req.params.email.split('@');
@@ -72,57 +110,18 @@ app.get('/check_email/:email', function(req, res) {
 
 		var tested_domains = {};
 
-		var only_once = false;
 		var uuid = guid().replace(/-/g,'');
-		underscore.each(data, function(item){
-			if (!only_once){
-				only_once = true;
-				var hostname = item.exchange;
-				if (!tested_domains[hostname]){
-					tested_domains[hostname] = true;
-					
-					console.log('testing hostname', hostname);
-					smtp.connect(hostname, 25, function (mail) {
-						seq()
-							.seq_(function (next) {
-								mail.on('greeting', function (code, lines) {
-									next();
-								});
-							})
-							.seq(function (next) {
-								mail.helo('MailTester', this.into('helo'));
-							})
-							.seq(function () {
-								mail.from('mailtester@gmail.com', this.into('from'));
-							})
-							.seq(function () {
-								mail.to(req.params.email, this.into('to'));
-							})
-							.seq(function () {
-								mail.to(uuid + '@' + domain, this.into('to_bad_email'));
-							})
-							.seq(function () {
-								mail.quit(this.into('quit'));
-							})
-							.seq(function () {
-								console.dir(this.vars);
-								res.json(this.vars);
-							});
-						return;
-					});
-				}
-			}
-		});
+		var error_message = 'DNS connect error';
+		data = underscore.map(data, function(item){ return item.exchange; });
+		var unique_hostnames = underscore.uniq(data, true);
+		smtp_check(req, res, unique_hostnames, req.params.email, uuid + '@' + domain);
+
 	});
 });
 
 var server = http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
   console.log('listening on port ' + app.get('port'));
 });
-
-// server.on('error', function(err) {
-// 	console.log('hi');
-// });
 
 server.on('close', function() {
   console.log('server closed on port ' + app.get('port'));
