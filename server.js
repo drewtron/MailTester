@@ -1,7 +1,8 @@
 var express = require('express');
-var app = express();
 var http = require('http');
 var tools = require('./routes/tools.js');
+
+var app = express();
 
 app.configure(function() {
   app.set('startedOn', new Date());
