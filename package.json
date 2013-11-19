@@ -7,7 +7,8 @@
   "repository": "https://github.com/drewtron/MailTester.git",
   "dependencies": {
     "underscore": "1.4.x",
-    "express": "3.x"
+    "express": "3.x",
+    "smtp-protocol": "0.4.1"
   },
   "devDependencies": {},
   "optionalDependencies": {},
