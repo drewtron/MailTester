@@ -25,6 +25,17 @@ app.use(express.logger());
 app.get('/', tools.diagnostic(app));
 app.get('/diag*', tools.diagnostic(app));
 
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+             .toString(16)
+             .substring(1);
+};
+
+function guid() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+         s4() + '-' + s4() + s4() + s4();
+}
+
 var nsLookup = function(domain, timeout, callback) {
   var callbackCalled = false;
   var doCallback = function(err, domains) {
@@ -62,6 +73,7 @@ app.get('/check_email/:email', function(req, res) {
 		var tested_domains = {};
 
 		var only_once = false;
+		var uuid = guid().replace(/-/g,'');
 		underscore.each(data, function(item){
 			if (!only_once){
 				only_once = true;
@@ -87,7 +99,7 @@ app.get('/check_email/:email', function(req, res) {
 								mail.to(req.params.email, this.into('to'));
 							})
 							.seq(function () {
-								mail.to('fawefwa@fwafa.com', this.into('to_bad_email'));
+								mail.to(uuid + '@' + domain, this.into('to_bad_email'));
 							})
 							.seq(function () {
 								mail.quit(this.into('quit'));
@@ -107,6 +119,10 @@ app.get('/check_email/:email', function(req, res) {
 var server = http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
   console.log('listening on port ' + app.get('port'));
 });
+
+// server.on('error', function(err) {
+// 	console.log('hi');
+// });
 
 server.on('close', function() {
   console.log('server closed on port ' + app.get('port'));
