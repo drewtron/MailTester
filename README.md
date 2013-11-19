@@ -1,6 +1,10 @@
 # Mail Tester
 Simple API to test if an email address is valid.
 
+## Setup
+
+Follow: https://github.com/intimonkey/approuter
+
 ## Endpoints
 ```bash
 /diag
