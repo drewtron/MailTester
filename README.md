@@ -1,6 +1,8 @@
 # Mail Tester
 Simple API to test if an email address is valid.
 
+Based on http://mailtester.com/
+
 ## Setup
 
 Follow: https://github.com/intimonkey/approuter
