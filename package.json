@@ -1,0 +1,17 @@
+{
+  "name": "MailTester",
+  "version": "0.0.0",
+  "private": false,
+  "description": "MailTester",
+  "main": "server.js",
+  "repository": "https://github.com/drewtron/MailTester.git",
+  "dependencies": {
+    "underscore": "1.4.x",
+    "express": "3.x"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+source bin/nvm.sh
+nvm use 0.10.10
+exec node server.js $1
