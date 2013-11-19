@@ -19,11 +19,12 @@ app.configure(function() {
 
 app.use(express.logger());
 
-app.get('/', function(req, res){
-    res.send('Hello World');
-});
-
+app.get('/', tools.diagnostic(app));
 app.get('/diag*', tools.diagnostic(app));
+
+app.get('/check_email/:id', function(req, res) {
+	res.end(req.params.id);
+});
 
 var server = http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
   console.log('listening on port ' + app.get('port'));
