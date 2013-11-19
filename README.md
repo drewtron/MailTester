@@ -19,6 +19,7 @@ Possible JSON responses
 {'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'}
 {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
 {'code':4, 'message': 'Mail server not found for domain'}
+{'code':5, 'message': 'DNS Timeout'}
 ```
 
 ## Notes

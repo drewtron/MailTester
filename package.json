@@ -8,7 +8,8 @@
   "dependencies": {
     "underscore": "1.4.x",
     "express": "3.x",
-    "smtp-protocol": "0.4.1"
+    "smtp-protocol": "0.4.1",
+    "seq": "0.3.5"
   },
   "devDependencies": {},
   "optionalDependencies": {},
