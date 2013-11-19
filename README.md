@@ -2,9 +2,11 @@
 Simple API to test if an email address is valid.
 
 ## Endpoints
+```bash
+/diag
 
 /check_email/<email_address>
-
+```
 Possible JSON Responses
 ```bash
 {'code':1, 'message': 'Mail server indicates this is a valid email address'}
