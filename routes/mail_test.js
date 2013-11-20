@@ -140,9 +140,11 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 			});
 		return;//TODO call self
 	}, function(error){
-		if (error && error.code)
+		if (error && error.code) {
 			error_message = error.code;
-		return;//TODO call self
+			res.json({'code':10, 'message': error_message});
+			return;//TODO call self
+		}
 	});
 };
 
