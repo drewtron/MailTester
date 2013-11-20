@@ -29,6 +29,8 @@ var nsLookup = function(domain, timeout, callback) {
   dns.resolveMx(domain, doCallback);
 };
 
+var results = {}
+
 var smtp_check = function(req, res, hosts, email, bad_email){
 	var hostname = hosts.shift();
 	console.log('testing hostname', hostname);
@@ -36,33 +38,103 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 	smtp.connect(hostname, 25, function (mail) {
 		seq()
 			.seq_(function (next) {
+				console.log("Listen for greeting")
 				mail.on('greeting', function (code, lines) {
-					next();
+					results.greeting = code
+					console.log(code + " " + lines)
+					if (code > 300) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
 				});
 			})
-			.seq(function (next) {
-				mail.helo('MailTester', this.into('helo'));
+			.seq_(function (next) {
+				console.log("Send HELO")
+				mail.helo('MailTester', function (err, code, lines) {
+					results.helo = code
+					console.log(code + " " + lines)
+					if (err || code > 300) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
+                                });
 			})
-			.seq(function () {
-				mail.from('mailtester@gmail.com', this.into('from'));
+			.seq_(function (next) {
+				console.log("Announce FROM address")
+				mail.from('mailtester@gmail.com', function (err, code, lines) {
+					results.from = code
+					console.log(code + " " + lines)
+					if (err || code > 300) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
+                                });
 			})
-			.seq(function () {
-				mail.to(req.params.email, this.into('to'));
+			.seq_(function (next) {
+				console.log("Send Valid Recipient")
+				mail.to(req.params.email, function (err, code, lines) {
+					results.to = code
+					console.log(code + " " + lines)
+					if (err || code > 300) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
+                                });
 			})
-			.seq(function () {
-				mail.to(bad_email, this.into('to_bad_email'));
+			.seq_(function (next) {
+				console.log("Send Invalid Recipient")
+				mail.to(bad_email, function (err, code, lines) {
+					results.invalid_to = code
+					console.log(code + " " + lines)
+					if (err ) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
+                                });
 			})
-			.seq(function () {
-				mail.quit(this.into('quit'));
+			.seq_(function (next) {
+				console.log("Disconnect")
+				mail.quit(function (err, code, lines) {
+					results.quit = code
+					console.log(code + " " + lines)
+					if (err) {
+						res.json({'code':9, 'message': lines});
+						next("Error")
+					}
+					else {
+						next();
+					}
+                                });
 			})
-			.seq(function () {
-				console.dir(this.vars);
-				if (this.vars.helo >= 200 && this.vars.helo < 300){
-					if (this.vars.to >= 200 && this.vars.to < 300 && (this.vars.helo < 200 || this.vars.helo >= 300))
+			.catch(function (err) {
+			    console.error(err.stack ? err.stack : err)
+			})
+			.seq_(function (next) {
+				console.dir(results);
+				if ((results.helo >= 200 && results.helo < 300) &&  (results.to >= 200 && results.to < 300)){
+					if (results.invalid_to < 200 || results.to_bad_email >= 300)
 						res.json({'code':1, 'message': 'Mail server indicates this is a valid email address'});
 					else
 						res.json({'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'});
 					return;
+				}
+				else{
+					smtp_check(req, res, hosts, email, bad_email);
 				}
 				//res.send(this.vars.helo.toString());
 			});
