@@ -25,3 +25,9 @@ Possible JSON responses
 ## Notes
 
 We risk spamming smtp servers with these requests which can lead to getting ourselves added to spam lists.  This will make the method of testing ineffective.
+
+## Example Emails
+
+afriedrich@glgroup.com
+donkernan@ymail.com - hangs/timesout on connecting to mail server
+stovenator@hotmail.com - server disconnects client
