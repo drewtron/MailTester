@@ -127,7 +127,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 			.seq_(function (next) {
 				console.dir(results);
 				if ((results.helo >= 200 && results.helo < 300) &&  (results.to >= 200 && results.to < 300)){
-					if (results.invalid_to < 200 || results.to_bad_email >= 300)
+					if (results.invalid_to < 200 || results.invalid_to >= 300)
 						res.json({'code':1, 'message': 'Mail server indicates this is a valid email address'});
 					else
 						res.json({'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'});
