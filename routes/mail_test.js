@@ -43,7 +43,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.greeting = code
 					console.log(code + " " + lines)
 					if (code > 300) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -57,7 +57,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.helo = code
 					console.log(code + " " + lines)
 					if (err || code > 300) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -71,7 +71,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.from = code
 					console.log(code + " " + lines)
 					if (err || code > 300) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -85,7 +85,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.to = code
 					console.log(code + " " + lines)
 					if (err || code > 300) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -99,7 +99,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.invalid_to = code
 					console.log(code + " " + lines)
 					if (err ) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -113,7 +113,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 					results.quit = code
 					console.log(code + " " + lines)
 					if (err) {
-						res.json({'code':9, 'message': lines});
+						res.jsonp({'code':9, 'message': lines});
 						next("Error")
 					}
 					else {
@@ -128,9 +128,9 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 				console.dir(results);
 				if ((results.helo >= 200 && results.helo < 300) &&  (results.to >= 200 && results.to < 300)){
 					if (results.invalid_to < 200 || results.invalid_to >= 300)
-						res.json({'code':1, 'message': 'Mail server indicates this is a valid email address'});
+						res.jsonp({'code':1, 'message': 'Mail server indicates this is a valid email address'});
 					else
-						res.json({'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'});
+						res.jsonp({'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'});
 					return;
 				}
 				else{
@@ -142,7 +142,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 	}, function(error){
 		if (error && error.code) {
 			error_message = error.code;
-			res.json({'code':10, 'message': error_message});
+			res.jsonp({'code':10, 'message': error_message});
 			return;//TODO call self
 		}
 	});
@@ -158,11 +158,11 @@ var mail_test = function() {
 		nsLookup(domain, 5000, function(error, data){
 			if (error){
 				console.log(error);
-				res.json({'code':5, 'message': 'DNS Timeout'});
+				res.jsonp({'code':5, 'message': 'Unable to verify domain. DNS Timeout'});
 				return;
 			}
 			if (data === undefined){
-				res.json({'code':4, 'message': 'Mail server not found for domain'});
+				res.jsonp({'code':4, 'message': 'Mail server not found for domain'});
 				return;
 			}
 

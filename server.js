@@ -2,6 +2,7 @@ var express = require('express');
 var http = require('http');
 var tools = require('./routes/tools.js');
 var mail_test = require('./routes/mail_test.js');
+var cors = require('cors');
 
 var app = express();
 
@@ -13,6 +14,7 @@ app.configure(function() {
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser('cookies!'));
+  app.use(cors());
   //app.use(express.static(path.join(app.get('root'), 'public')));
   app.use(app.router);
 });

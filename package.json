@@ -9,7 +9,8 @@
     "underscore": "1.4.x",
     "express": "3.x",
     "smtp-protocol": "git+http://github.com/drewtron/node-smtp-protocol.git",
-    "seq": "0.3.5"
+    "seq": "0.3.5",
+    "cors": "2.1.0"
   },
   "devDependencies": {},
   "optionalDependencies": {},
