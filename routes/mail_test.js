@@ -174,8 +174,11 @@ var mail_test = function() {
 			var error_message = 'DNS connect error';
 			data = underscore.map(data, function(item){ return item.exchange; });
 			var unique_hostnames = underscore.uniq(data, true);
-			smtp_check(req, res, unique_hostnames, req.params.email, uuid + '@' + domain);
-
+			try {
+				smtp_check(req, res, unique_hostnames, req.params.email, uuid + '@' + domain);
+			} catch (err){
+				res.jsonp({'code':0, 'message': 'Mail server found. Unable to connect'});
+			}
 		});
 	};
 };
