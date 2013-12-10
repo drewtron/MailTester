@@ -1,4 +1,4 @@
 #! /usr/bin/env bash
 
-pip install cherrypy
-pip install dnspython
+sudo pip install cherrypy
+sudo pip install dnspython
