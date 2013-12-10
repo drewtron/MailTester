@@ -44,20 +44,25 @@ class root:
                 break
             try:
                 server = smtplib.SMTP(str(mail_server.exchange)[:-1])
+            except Exception as ex:
+                result = {'code':6, 'message': 'Unable to connect to Mail Server'}
+                continue
+            try:
                 (code, msg) = server.helo('MailTester')
                 (code, msg) = server.docmd('MAIL FROM:', '<mailtester@gmail.com>')
                 if 200 <= code <= 299:
                     (code, msg) = server.docmd('RCPT TO:', '<{}>'.format(email))
-                    if 500 <= code:
+                    if code >= 500:
                         result = {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
                     else:
                         (code_bad_email, msg) = server.docmd('RCPT TO:', '<{}@{}>'.format(str(uuid.uuid4()), domain))
                         if code != code_bad_email and 200 <= code <= 299:
                             result = {'code':1, 'message': 'Mail server indicates this is a valid email address'}
                         else:
-                            result = {'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'}
+                            result = {'code':2, 'message': 'Mail server found for domain, but the server doesn\'t allow e-mail address verification'}
             except Exception as ex:
-                result = {'code':6, 'message': 'Unable to connect to SMTP server'}
+                server.quit()
+
 
         resp = json.dumps(result)
         if 'callback' in kwargs:
