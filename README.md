@@ -17,7 +17,7 @@ Possible JSON responses
 ```bash
 {'code':0, 'message': 'Unknown Exception'}
 {'code':1, 'message': 'Mail server indicates this is a valid email address'}
-{'code':2, 'message': 'Mail server found for domain, but the server doesn't allow e-mail address verification'}
+{'code':2, 'message': 'Mail server found for domain, but the server doesn\'t allow e-mail address verification'}
 {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
 {'code':4, 'message': 'Mail server not found for domain'}
 {'code':5, 'message': 'DNS Lookup Timeout'}
