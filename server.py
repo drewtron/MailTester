@@ -10,13 +10,9 @@ import dns.resolver
 import dns.exception
 import uuid
 
-valid_domain_folder = os.path.join(os.path.expanduser("~"), '.valid_mail_domains')
-if not valid_domain_folder:
-    os.mkdir(valid_domain_folder)
-
 def CORS():
     cherrypy.response.headers["Access-Control-Allow-Origin"] = '*'
-    cherrypy.response.headers["Access-Control-Request-Method"] = 'GET OPTIONS'
+    cherrypy.response.headers["Access-Control-Request-Method"] = 'GET'
 
 cherrypy.tools.CORS = cherrypy.Tool('before_finalize', CORS)
 
@@ -33,7 +29,7 @@ class root:
         try:
             mail_servers = sorted([x for x in dns.resolver.query(domain, 'MX')], key=lambda k: k.preference)
         except dns.exception.Timeout as ex:
-            result = {'code':5, 'message': 'DNS Timeout'}
+            result = {'code':5, 'message': 'DNS Lookup Timeout'}
         except dns.resolver.NXDOMAIN as ex:
             result = {'code':4, 'message': 'Mail server not found for domain'}
         except Exception as ex:
@@ -42,6 +38,8 @@ class root:
         for mail_server in mail_servers:
             if result['code'] not in [0, 6]:
                 break
+
+            print 'Attempting to connect to ' + str(mail_server.exchange)[:-1]
             try:
                 server = smtplib.SMTP(str(mail_server.exchange)[:-1])
             except Exception as ex:
