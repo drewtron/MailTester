@@ -10,6 +10,10 @@ import dns.resolver
 import dns.exception
 import uuid
 
+valid_domain_folder = os.path.join(os.path.expanduser("~"), '.valid_mail_domains')
+if not valid_domain_folder:
+    os.mkdir(valid_domain_folder)
+
 def CORS():
     cherrypy.response.headers["Access-Control-Allow-Origin"] = '*'
     cherrypy.response.headers["Access-Control-Request-Method"] = 'GET OPTIONS'
@@ -36,21 +40,24 @@ class root:
             result = {'code':0, 'message': 'Unknown Exception: ' + ex.message}
 
         for mail_server in mail_servers:
-            if result['code'] != 0:
+            if result['code'] not in [0, 6]:
                 break
-            server = smtplib.SMTP(str(mail_server.exchange)[:-1])
-            (code, msg) = server.helo('MailTester')
-            (code, msg) = server.docmd('MAIL FROM:', '<mailtester@gmail.com>')
-            if 200 <= code <= 299:
-                (code, msg) = server.docmd('RCPT TO:', '<{}>'.format(email))
-                if 500 <= code:
-                    result = {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
-                else:
-                    (code_bad_email, msg) = server.docmd('RCPT TO:', '<{}@{}>'.format(str(uuid.uuid4()), domain))
-                    if code != code_bad_email and 200 <= code <= 299:
-                        result = {'code':1, 'message': 'Mail server indicates this is a valid email address'}
+            try:
+                server = smtplib.SMTP(str(mail_server.exchange)[:-1])
+                (code, msg) = server.helo('MailTester')
+                (code, msg) = server.docmd('MAIL FROM:', '<mailtester@gmail.com>')
+                if 200 <= code <= 299:
+                    (code, msg) = server.docmd('RCPT TO:', '<{}>'.format(email))
+                    if 500 <= code:
+                        result = {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
                     else:
-                        result = {'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'}
+                        (code_bad_email, msg) = server.docmd('RCPT TO:', '<{}@{}>'.format(str(uuid.uuid4()), domain))
+                        if code != code_bad_email and 200 <= code <= 299:
+                            result = {'code':1, 'message': 'Mail server indicates this is a valid email address'}
+                        else:
+                            result = {'code':2, 'message': 'Mail server found for domain, but cannot validate the email address'}
+            except Exception as ex:
+                result = {'code':6, 'message': 'Unable to connect to SMTP server'}
 
         resp = json.dumps(result)
         if 'callback' in kwargs:
