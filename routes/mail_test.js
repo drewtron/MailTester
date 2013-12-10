@@ -35,7 +35,7 @@ var smtp_check = function(req, res, hosts, email, bad_email){
 	var hostname = hosts.shift();
 	console.log('testing hostname', hostname);
 	
-	smtp.connect(hostname, 25, 5000, function (mail) {
+	smtp.connect(hostname, 25, 10000, function (mail) {
 		seq()
 			.seq_(function (next) {
 				console.log("Listen for greeting")
