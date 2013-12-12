@@ -65,7 +65,9 @@ class root:
         resp = json.dumps(result)
         if 'callback' in kwargs:
             resp = '%s(%s)' % (kwargs['callback'], resp)
-            cherrypy.response.headers['Content-Type']= 'application/javascript'
+            cherrypy.response.headers['Content-Type'] = 'application/javascript'
+        else:
+            cherrypy.response.headers['Content-Type'] = 'application/json'
 
         return resp
 
