@@ -81,6 +81,7 @@ if __name__ == "__main__":
         'server.socket_port' : server_port,
         'tools.CORS.on' : True
     })
+    cherrypy.server_port = server_port
     cherrypy.process_start_time = datetime.datetime.now()
 
     root = root()
