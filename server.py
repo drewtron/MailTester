@@ -61,7 +61,7 @@ class root:
             except Exception as ex:
                 server.quit()
 
-
+        result['email'] = email
         resp = json.dumps(result)
         if 'callback' in kwargs:
             resp = '%s(%s)' % (kwargs['callback'], resp)

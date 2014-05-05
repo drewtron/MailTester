@@ -5,7 +5,18 @@ Based on http://mailtester.com/
 
 ## Setup
 
-Follow: https://github.com/intimonkey/approuter
+sudo apt-get update
+sudo apt-get install git
+sudo apt-get install python-pip
+sudo apt-get install build-essential
+sudo apt-get install libssl-dev
+sudo apt-get install libpopt-dev
+git clone https://github.com/intimonkey/approuter.git
+cd approuter/
+ls
+make
+source ./environment
+start_approuter https://github.com/drewtron/MailTester 8080 10
 
 ## Endpoints
 ```bash
