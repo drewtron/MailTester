@@ -1,1 +1,1 @@
-web: ./start_ports
+web: /app/start_ports
