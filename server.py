@@ -9,6 +9,7 @@ import smtplib
 import dns.resolver
 import dns.exception
 import uuid
+from multiprocessing import Process, Pipe
 
 def CORS():
     cherrypy.response.headers["Access-Control-Allow-Origin"] = '*'
@@ -16,60 +17,69 @@ def CORS():
 
 cherrypy.tools.CORS = cherrypy.Tool('before_finalize', CORS)
 
+def get_result(email, conn):
+    username, domain = email.split('@')
+    result = {'code':0, 'message': 'Unknown Exception'}
+    mail_servers = []
+
+    try:
+        mail_servers = sorted([x for x in dns.resolver.query(domain, 'MX')], key=lambda k: k.preference)
+    except dns.exception.Timeout as ex:
+        result = {'code':5, 'message': 'DNS Lookup Timeout'}
+    except dns.resolver.NXDOMAIN as ex:
+        result = {'code':4, 'message': 'Mail server not found for domain'}
+    except Exception as ex:
+        result = {'code':0, 'message': 'Unknown Exception: ' + ex.message}
+
+    for mail_server in mail_servers:
+        if result['code'] not in [0, 6]:
+            break
+
+        print 'Attempting to connect to ' + str(mail_server.exchange)[:-1]
+        try:
+            server = smtplib.SMTP(str(mail_server.exchange)[:-1])
+        except Exception as ex:
+            result = {'code':6, 'message': 'Unable to connect to Mail Server'}
+            continue
+        try:
+            (code, msg) = server.helo('MailTester')
+            (code, msg) = server.docmd('MAIL FROM:', '<mailtester@gmail.com>')
+            if 200 <= code <= 299:
+                (code, msg) = server.docmd('RCPT TO:', '<{}>'.format(email))
+                if code >= 500:
+                    result = {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
+                else:
+                    (code_bad_email, msg) = server.docmd('RCPT TO:', '<{}@{}>'.format(str(uuid.uuid4()), domain))
+                    if code != code_bad_email and 200 <= code <= 299:
+                        result = {'code':1, 'message': 'Mail server indicates this is a valid email address'}
+                    else:
+                        result = {'code':2, 'message': 'Mail server found for domain, but the server doesn\'t allow e-mail address verification'}
+        except Exception as ex:
+            server.quit()
+
+    result['email'] = email
+    resp = json.dumps(result)
+
+    print 'Done', resp
+
+    conn.send(resp)
+    conn.close()
+
 class root:
     diag = DiagHandler()
 
     @cherrypy.expose
     def check_email(self, *args, **kwargs):
         email = args[0]
-        username, domain = email.split('@')
-        result = {'code':0, 'message': 'Unknown Exception'}
-        mail_servers = []
 
-        try:
-            mail_servers = sorted([x for x in dns.resolver.query(domain, 'MX')], key=lambda k: k.preference)
-        except dns.exception.Timeout as ex:
-            result = {'code':5, 'message': 'DNS Lookup Timeout'}
-        except dns.resolver.NXDOMAIN as ex:
-            result = {'code':4, 'message': 'Mail server not found for domain'}
-        except Exception as ex:
-            result = {'code':0, 'message': 'Unknown Exception: ' + ex.message}
+        parent_conn, child_conn = Pipe()
+        p = Process(target=get_result, args=(email, child_conn))
+        p.start()
+        result = parent_conn.recv()
+        p.join()
 
-        for mail_server in mail_servers:
-            if result['code'] not in [0, 6]:
-                break
-
-            print 'Attempting to connect to ' + str(mail_server.exchange)[:-1]
-            try:
-                server = smtplib.SMTP(str(mail_server.exchange)[:-1])
-            except Exception as ex:
-                result = {'code':6, 'message': 'Unable to connect to Mail Server'}
-                continue
-            try:
-                (code, msg) = server.helo('MailTester')
-                (code, msg) = server.docmd('MAIL FROM:', '<mailtester@gmail.com>')
-                if 200 <= code <= 299:
-                    (code, msg) = server.docmd('RCPT TO:', '<{}>'.format(email))
-                    if code >= 500:
-                        result = {'code':3, 'message': 'Mail server found for domain, but the email address is not valid'}
-                    else:
-                        (code_bad_email, msg) = server.docmd('RCPT TO:', '<{}@{}>'.format(str(uuid.uuid4()), domain))
-                        if code != code_bad_email and 200 <= code <= 299:
-                            result = {'code':1, 'message': 'Mail server indicates this is a valid email address'}
-                        else:
-                            result = {'code':2, 'message': 'Mail server found for domain, but the server doesn\'t allow e-mail address verification'}
-            except Exception as ex:
-                server.quit()
-
-        result['email'] = email
-        resp = json.dumps(result)
-        if 'callback' in kwargs:
-            resp = '%s(%s)' % (kwargs['callback'], resp)
-            cherrypy.response.headers['Content-Type'] = 'application/javascript'
-        else:
-            cherrypy.response.headers['Content-Type'] = 'application/json'
-
-        return resp
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        return result
 
 if __name__ == "__main__":
 
