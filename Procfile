@@ -1,1 +1,1 @@
-web: start_ports
+web: ./start_ports
