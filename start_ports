@@ -1,0 +1,5 @@
+/home/ubuntu/app/.heroku/python/bin/python server.py 9001
+/home/ubuntu/app/.heroku/python/bin/python server.py 9002
+/home/ubuntu/app/.heroku/python/bin/python server.py 9003
+/home/ubuntu/app/.heroku/python/bin/python server.py 9004
+/home/ubuntu/app/.heroku/python/bin/python server.py 9005

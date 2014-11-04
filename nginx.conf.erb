@@ -1,0 +1,49 @@
+# vi: ft=nginx ts=2 et sw=2 sts=2 :
+
+worker_processes  1;
+daemon off;
+
+error_log  /dev/stderr info;
+pid        /var/run/nginx.pid;
+
+events {
+  worker_connections  1000;
+}
+
+http {
+  include    mime.conf;
+  include    proxy.conf;
+
+  default_type application/octet-stream;
+  log_format   main '$remote_addr - $remote_user [$time_local]  $status '
+    '"$request" $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';
+  access_log   /dev/stdout  main;
+  sendfile     on;
+  keepalive_timeout  65;
+  tcp_nopush   on;
+
+  upstream local {
+    server 127.0.0.1:9001;
+    server 127.0.0.1:9002;
+    server 127.0.0.1:9003;
+    server 127.0.0.1:9004;
+    server 127.0.0.1:9005;
+  }
+
+  server {
+    listen <%= ENV['PORT'] %>;
+    location / {
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Server $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $host;
+      rewrite_log on;
+      proxy_pass http://local/;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+  }
+
+}
