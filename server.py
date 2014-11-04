@@ -10,6 +10,7 @@ import dns.resolver
 import dns.exception
 import uuid
 from multiprocessing import Process, Pipe
+import os
 
 def CORS():
     cherrypy.response.headers["Access-Control-Allow-Origin"] = '*'
@@ -18,6 +19,7 @@ def CORS():
 cherrypy.tools.CORS = cherrypy.Tool('before_finalize', CORS)
 
 def get_result(email, conn):
+    print os.getpid()
     username, domain = email.split('@')
     result = {'code':0, 'message': 'Unknown Exception'}
     mail_servers = []
