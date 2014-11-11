@@ -5,18 +5,15 @@ Based on http://mailtester.com/
 
 ## Setup
 
+```bash
 sudo apt-get update
-sudo apt-get install git
-sudo apt-get install python-pip
-sudo apt-get install build-essential
-sudo apt-get install libssl-dev
-sudo apt-get install libpopt-dev
+sudo apt-get install git python-pip build-essential libssl-dev libpopt-dev
 git clone https://github.com/intimonkey/approuter.git
 cd approuter/
-ls
 make
 source ./environment
 start_approuter https://github.com/drewtron/MailTester 8080 10
+```
 
 ## Endpoints
 ```bash
