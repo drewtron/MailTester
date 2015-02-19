@@ -19,7 +19,6 @@ def CORS():
 cherrypy.tools.CORS = cherrypy.Tool('before_finalize', CORS)
 
 def get_result(email, conn):
-    print os.getpid()
     username, domain = email.split('@')
     result = {'code':0, 'message': 'Unknown Exception'}
     mail_servers = []
@@ -73,6 +72,9 @@ class root:
     @cherrypy.expose
     def check_email(self, *args, **kwargs):
         email = args[0]
+        if '@' not in email:
+            resp = json.dumps({'code':0, 'message': 'Enter a valid email address'})
+            return resp
 
         parent_conn, child_conn = Pipe()
         p = Process(target=get_result, args=(email, child_conn))
