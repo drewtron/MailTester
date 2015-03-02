@@ -56,7 +56,10 @@ def get_result(email, conn):
                     else:
                         result = {'code':2, 'message': 'Mail server found for domain, but the server doesn\'t allow e-mail address verification'}
         except Exception as ex:
-            server.quit()
+            try:
+                server.quit()
+            except Exception:
+                pass
 
     result['email'] = email
     resp = json.dumps(result)
